@@ -42,9 +42,11 @@ module Jekyll
         end
 
         def print_data(data, opts)
-          print_list_plain(data) if opts["output"].nil? || opts["output"] == "plain"
+          print_list_text(data) if opts["output"].nil? || opts["output"] == "plain"
           print_list_yaml(data) if opts["output"] == "yaml"
           print_list_json(data) if opts["output"] == "json"
+          print_list_text(data, ",") if opts["output"] == "csv"
+          print_list_text(data, "\t") if opts["output"] == "tsv"
         end
 
         def get_categories(site)
@@ -72,13 +74,13 @@ module Jekyll
           sorted_tags = tags.sort_by { |tag, count| tag.downcase }.to_h
         end
 
-        def print_list_plain(list)
+        def print_list_text(list, separator = " ")
           # Print the output as plain text
           list.each do |item, count|
             if count.nil?
               puts "#{item}"
             else
-              puts "#{item} #{count}"
+              puts "#{item}#{separator}#{count}"
             end
           end
         end
