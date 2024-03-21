@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.authors = ["Francesco Pira"]
   spec.email = ["dev@fpira.com"]
 
-  spec.summary = "List tags and categories for your Jekyll site."
-  spec.description = "List tags and categories for your Jekyll site and number of their occurrencies. Choose between a JSON output or a tabular output."
+  spec.summary = "List tags and categories for your Jekyll website."
+  spec.description = "Jekyll command plugin to list tags and categories for your Jekyll website and number of their occurrencies. Choose between a JSON, YAML, or plain text output."
   spec.homepage = "https://github.com/pirafrank/jekyll-listme"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.0.0"

@@ -1,34 +1,45 @@
 # Jekyll::Listme
 
-TODO: Delete this and the text below, and describe your gem
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/jekyll/listme`. To experiment with that code, run `bin/console` for an interactive prompt.
+A [Jekyll](https://jekyllrb.com/) [command](https://jekyllrb.com/docs/plugins/commands/) plugin to list tags and categories for your Jekyll website and number of their occurrencies. Choose between a JSON, YAML, or plain text output.
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
-
-Install the gem and add to the application's Gemfile by executing:
-
-    $ bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
-
-If bundler is not being used to manage dependencies, install the gem by executing:
-
-    $ gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+```
+gem 'jekyll-listme', '0.1.0', git: 'https://github.com/pirafrank/jekyll-listme', branch: 'main'
+```
 
 ## Usage
 
-TODO: Write usage instructions here
+Plain output is the default, or you can use `--output plain`.
+
+```
+bundle exec jekyll list --tags
+bundle exec jekyll list --categories
+```
+
+You can also `--output json` or `--output yaml` to get JSON or YAML output.
+
+```
+bundle exec jekyll list --tags --output json
+bundle exec jekyll list --categories --output json
+```
+
+```
+bundle exec jekyll list --tags --output yaml
+bundle exec jekyll list --categories --output yaml
+```
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+Clone and run `bundle install` to get started.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+Code lives in `lib/jekyll/commands` and is referenced with `require` in `lib/jekyll/listme.rb`. To experiment with that code, run `bundle exec jekyll list` from a Jekyll site with this gem added as plugin. Read more on [Jekyll's Commands documentation](https://jekyllrb.com/docs/plugins/commands/).
+
+I got the first steps to create the template from [here](https://maxchadwick.xyz/blog/building-a-custom-jekyll-command-plugin).
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/jekyll-listme.
+Bug reports and pull requests are welcome on GitHub at https://github.com/pirafrank/jekyll-listme.
 
 ## License
 
