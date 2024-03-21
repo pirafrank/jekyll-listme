@@ -1,3 +1,5 @@
+require 'json'
+
 module Jekyll
   module Commands
     class ListMe < Command
@@ -19,19 +21,38 @@ module Jekyll
           end
         end
 
-        def process(args, options)
-          Jekyll.logger.adjust_verbosity(options)
-          options = configuration_from_options(options)
+        def process(args, opts)
+          Jekyll.logger.adjust_verbosity(opts)
+          options = configuration_from_options(opts)
           site = Jekyll::Site.new(options)
 
           site.reset
           site.read
 
-          get_tags(site)
+          list = nil
+          if opts["tags"]
+            list = get_tags(site)
+          elsif opts["categories"]
+            list = get_categories(site)
+          else
+            Jekyll.logger.error "You must specify either --tags or --categories."
+            return
+          end
+          print_data(list, opts)
+        end
+
+        def print_data(data, opts)
+          print_list_plain(data) if opts["output"].nil? || opts["output"] == "plain"
+          print_list_yaml(data) if opts["output"] == "yaml"
+          print_list_json(data) if opts["output"] == "json"
+        end
+
+        def get_categories(site)
+            categories = site.categories.keys
         end
 
         def get_tags(site)
-          tags = {}
+          tags = Hash.new(0)
 
           # Loop through all the posts
           site.posts.docs.each do |post|
@@ -48,12 +69,28 @@ module Jekyll
           end
 
           # Sort the tags alphabetically (case-insensitive)
-          sorted_tags = tags.sort_by { |tag, count| tag.downcase }
+          sorted_tags = tags.sort_by { |tag, count| tag.downcase }.to_h
+        end
 
-          # Print the output with quantity per each tag
-          sorted_tags.each do |tag, count|
-            puts "#{tag}: #{count}"
+        def print_list_plain(list)
+          # Print the output as plain text
+          list.each do |item, count|
+            if count.nil?
+              puts "#{item}"
+            else
+              puts "#{item} #{count}"
+            end
           end
+        end
+
+        def print_list_json(list)
+          # Print the output in JSON format
+          puts JSON.pretty_generate(list)
+        end
+
+        def print_list_yaml(list)
+          # Print the output in YAML format
+          puts list.to_yaml
         end
 
       end
