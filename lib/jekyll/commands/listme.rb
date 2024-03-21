@@ -47,6 +47,8 @@ module Jekyll
           print_list_json(data) if opts["output"] == "json"
           print_list_text(data, ",") if opts["output"] == "csv"
           print_list_text(data, "\t") if opts["output"] == "tsv"
+          print_list_text(data, "|") if opts["output"] == "psv"
+          print_list_toml(data, opts["tags"] ? "Tags" : "Categories") if opts["output"] == "toml"
         end
 
         def get_categories(site)
@@ -93,6 +95,19 @@ module Jekyll
         def print_list_yaml(list)
           # Print the output in YAML format
           puts list.to_yaml
+        end
+
+        def print_list_toml(list, data_name)
+          puts "[#{data_name}]"
+          if list.empty? then return end
+          # Print the output in TOML format
+          list.each do |item, count|
+            if count.nil?
+              puts "\"#{item}\" = 1"
+            else
+              puts "\"#{item}\" = #{count}"
+            end
+          end
         end
 
       end
