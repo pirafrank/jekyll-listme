@@ -4,30 +4,41 @@ A [Jekyll](https://jekyllrb.com/) [command](https://jekyllrb.com/docs/plugins/co
 
 ## Installation
 
+```Gemfile
+gem 'jekyll-listme', git: 'https://github.com/pirafrank/jekyll-listme', branch: 'main'
 ```
-gem 'jekyll-listme', '0.1.0', git: 'https://github.com/pirafrank/jekyll-listme', branch: 'main'
+
+## Update
+
+```sh
+bundle update jekyll-listme
 ```
 
 ## Usage
 
 Plain output is the default, or you can use `--output plain`.
 
-```
+```sh
 bundle exec jekyll list --tags
 bundle exec jekyll list --categories
 ```
 
-You can also `--output json` or `--output yaml` to get JSON or YAML output.
+You can also choose an output format, like this:
 
-```
-bundle exec jekyll list --tags --output json
-bundle exec jekyll list --categories --output json
+```sh
+bundle exec jekyll list --tags --output FORMAT
+bundle exec jekyll list --categories --output FORMAT
 ```
 
-```
-bundle exec jekyll list --tags --output yaml
-bundle exec jekyll list --categories --output yaml
-```
+Supported formats are:
+
+- `plain`
+- `json`
+- `yaml`
+- `csv`
+- `tsv`
+- `psv`
+- `toml`
 
 ## Development
 
