@@ -14,6 +14,7 @@ module Jekyll
             c.option "categories", "-c", "--categories", "List categories"
             c.option "drafts", "-d", "--drafts", "List drafts"
             c.option "posts", "-p", "--posts", "List posts"
+            c.option "pages", "-a", "--pages", "List pages"
             c.option "output", "-o", "--output FORMAT", "Output format"
 
             c.action do |args, options|
@@ -61,6 +62,8 @@ module Jekyll
               list = get_posts(site, true)
             when opts["posts"]
               list = get_posts(site, false)
+            when opts["pages"]
+              list = get_pages(site)
             else
               Jekyll.logger.error "Invalid option. You must specify a known option. Check --help."
               return
@@ -111,6 +114,14 @@ module Jekyll
             end
           end
           list
+        end
+
+        def get_pages(site)
+          pages = Hash.new(0)
+          site.pages.each do |page|
+            pages[page.url] = page.data['title']
+          end
+          pages
         end
 
         def print_list_text(list, separator = " ")
