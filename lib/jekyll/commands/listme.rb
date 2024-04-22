@@ -23,7 +23,7 @@ module Jekyll
 
         def normalize_output_format(o)
           if o.nil? then
-            o == "plain"
+            o = "plain"
           else
             o = o.downcase
           end
