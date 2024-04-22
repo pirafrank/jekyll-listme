@@ -38,7 +38,6 @@ Supported formats are:
 - `csv`
 - `tsv`
 - `psv`
-- `toml`
 
 ## Development
 
