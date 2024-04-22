@@ -12,6 +12,8 @@ module Jekyll
 
             c.option "tags", "-t", "--tags", "List tags"
             c.option "categories", "-c", "--categories", "List categories"
+            c.option "drafts", "-d", "--drafts", "List drafts"
+            c.option "posts", "-p", "--posts", "List posts"
             c.option "output", "-o", "--output FORMAT", "Output format"
 
             c.action do |args, options|
@@ -33,6 +35,7 @@ module Jekyll
         def get_site(opts)
           Jekyll.logger.adjust_verbosity(opts)
           options = configuration_from_options(opts)
+          options["show_drafts"] = true
           site = Jekyll::Site.new(options)
           site.reset
           site.read
@@ -47,17 +50,20 @@ module Jekyll
             return
           end
 
-          if opts["tags"].nil? && opts["categories"].nil? then
-            Jekyll.logger.error "You must specify either --tags or --categories."
-            return
-          end
-
           site = get_site(opts)
           list = nil
-          if opts["tags"]
-            list = get_tags(site)
-          else
-            list = get_categories(site)
+          case
+            when opts["tags"]
+              list = get_tags(site)
+            when opts["categories"]
+              list = get_categories(site)
+            when opts["drafts"]
+              list = get_posts(site, true)
+            when opts["posts"]
+              list = get_posts(site, false)
+            else
+              Jekyll.logger.error "Invalid option. You must specify a known option. Check --help."
+              return
           end
           print_data(list, opts)
         end
@@ -94,6 +100,17 @@ module Jekyll
 
           # Sort the tags alphabetically (case-insensitive)
           sorted_tags = tags.sort_by { |tag, count| tag.downcase }.to_h
+        end
+
+        def get_posts(site, is_draft)
+          list = Hash.new(0)
+          site.posts.docs.sort_by { |post| post.data["date"] }.each do |post|
+            if post.data['draft'] == is_draft
+              iso_date = post.data["date"].iso8601
+              list[iso_date] = post.data['title']
+            end
+          end
+          list
         end
 
         def print_list_text(list, separator = " ")
