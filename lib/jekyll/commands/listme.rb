@@ -8,13 +8,10 @@ module Jekyll
         def init_with_program(prog)
           prog.command(:list) do |c|
             c.description "List tags and categories used in the site."
-            c.syntax "list [options]"
+            c.syntax "list [items] [options]"
 
-            c.option "tags", "-t", "--tags", "List tags"
-            c.option "categories", "-c", "--categories", "List categories"
-            c.option "drafts", "-d", "--drafts", "List drafts"
-            c.option "posts", "-p", "--posts", "List posts"
-            c.option "pages", "-a", "--pages", "List pages"
+            # nb. check the short option because it may be used elsewhere.
+            #     run --help to see the full list of options.
             c.option "output", "-o", "--output FORMAT", "Output format"
 
             c.action do |args, options|
@@ -44,6 +41,19 @@ module Jekyll
         end
 
         def process(args, opts)
+          supported_items = [ "tags", "categories", "drafts", "posts", "pages" ]
+          choice = args[0]
+          if choice.nil?
+            Jekyll.logger.error "You must specify items to list.\nSupported items are: #{supported_items.join(", ")}"
+            return
+          end
+          # normalize to lowercase
+          choice = choice.downcase
+          unless supported_items.include?(choice)
+            Jekyll.logger.error "Invalid argument. Supported items are: #{supported_items.join(", ")}"
+            return
+          end
+
           opts["output"] = normalize_output_format(opts["output"])
           supported_formats = [ "plain", "yaml", "json", "csv", "tsv", "psv" ]
           unless supported_formats.include?(opts["output"])
@@ -53,16 +63,16 @@ module Jekyll
 
           site = get_site(opts)
           list = nil
-          case
-            when opts["tags"]
+          case choice
+            when "tags"
               list = get_tags(site)
-            when opts["categories"]
+            when "categories"
               list = get_categories(site)
-            when opts["drafts"]
+            when "drafts"
               list = get_posts(site, true)
-            when opts["posts"]
+            when "posts"
               list = get_posts(site, false)
-            when opts["pages"]
+            when "pages"
               list = get_pages(site)
             else
               Jekyll.logger.error "Invalid option. You must specify a known option. Check --help."
