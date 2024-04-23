@@ -14,6 +14,7 @@ module Jekyll
             #     run --help to see the full list of options.
             c.option "output", "-o", "--output FORMAT", "Output format"
             c.option "count", "-c", "--count", "Count the number of items"
+            c.option "all", "-a", "--all", "Count all items"
 
             c.action do |args, options|
               options["serving"] = false
@@ -41,16 +42,36 @@ module Jekyll
           site
         end
 
+        def populate_results(choice, site)
+          results = Hash.new(0)
+          case choice
+            when "tags"
+              results["tags"] = get_tags(site)
+            when "categories"
+              results["categories"] = get_categories(site)
+            when "drafts"
+              results["drafts"] = get_posts(site, true)
+            when "posts"
+              results["posts"] = get_posts(site, false)
+            when "pages"
+              results["pages"] = get_pages(site)
+            else
+              Jekyll.logger.error "Invalid option. You must specify a known option. Check --help."
+              return
+          end
+          results
+        end
+
         def process(args, opts)
           supported_items = [ "tags", "categories", "drafts", "posts", "pages" ]
-          choice = args[0]
+          choice = opts["all"] ? "all" : args[0]
           if choice.nil?
             Jekyll.logger.error "You must specify items to list.\nSupported items are: #{supported_items.join(", ")}"
             return
           end
           # normalize to lowercase
           choice = choice.downcase
-          unless supported_items.include?(choice)
+          unless supported_items.include?(choice) || opts["all"]
             Jekyll.logger.error "Invalid argument. Supported items are: #{supported_items.join(", ")}"
             return
           end
@@ -62,25 +83,26 @@ module Jekyll
             return
           end
 
+          # Generate the website
           site = get_site(opts)
-          list = nil
-          case choice
-            when "tags"
-              list = get_tags(site)
-            when "categories"
-              list = get_categories(site)
-            when "drafts"
-              list = get_posts(site, true)
-            when "posts"
-              list = get_posts(site, false)
-            when "pages"
-              list = get_pages(site)
+          # Populate the results based on the choice
+          to_print = Hash.new(0)
+          if choice != "all"
+            results = populate_results(choice, site)
+            if opts["count"]
+              to_print[choice] = count_items(results[choice])
             else
-              Jekyll.logger.error "Invalid option. You must specify a known option. Check --help."
-              return
+              to_print = results[choice]
+            end
+          else
+            supported_items.each do |item|
+              results = populate_results(item, site)
+              to_print[item] = count_items(results[item])
+            end
           end
-          list = count_items(choice, list) if opts["count"]
-          print_data(list, opts)
+
+          # finally print the data
+          print_data(to_print, opts)
         end
 
         def print_data(data, opts)
@@ -92,16 +114,14 @@ module Jekyll
           print_list_text(data, "|") if opts["output"] == "psv"
         end
 
-        def count_items(choice, list)
+        def count_items(list)
           count = 0
           if list.class == Hash
             count = list.keys.length
           elsif list.class == Array
             count = list.length
           end
-          r = Hash.new(0)
-          r[choice] = count
-          r
+          count
         end
 
         def get_categories(site)
