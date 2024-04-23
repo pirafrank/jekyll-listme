@@ -8,14 +8,13 @@ module Jekyll
         def init_with_program(prog)
           prog.command(:list) do |c|
             c.description "List tags and categories used in the site."
-            c.syntax "list [options]"
+            c.syntax "list [items] [options]"
 
-            c.option "tags", "-t", "--tags", "List tags"
-            c.option "categories", "-c", "--categories", "List categories"
-            c.option "drafts", "-d", "--drafts", "List drafts"
-            c.option "posts", "-p", "--posts", "List posts"
-            c.option "pages", "-a", "--pages", "List pages"
+            # nb. check the short option because it may be used elsewhere.
+            #     run --help to see the full list of options.
             c.option "output", "-o", "--output FORMAT", "Output format"
+            c.option "count", "-c", "--count", "Count the number of items"
+            c.option "all", "-a", "--all", "Count all items"
 
             c.action do |args, options|
               options["serving"] = false
@@ -43,7 +42,40 @@ module Jekyll
           site
         end
 
+        def populate_results(choice, site)
+          results = Hash.new(0)
+          case choice
+            when "tags"
+              results["tags"] = get_tags(site)
+            when "categories"
+              results["categories"] = get_categories(site)
+            when "drafts"
+              results["drafts"] = get_posts(site, true)
+            when "posts"
+              results["posts"] = get_posts(site, false)
+            when "pages"
+              results["pages"] = get_pages(site)
+            else
+              Jekyll.logger.error "Invalid option. You must specify a known option. Check --help."
+              return
+          end
+          results
+        end
+
         def process(args, opts)
+          supported_items = [ "tags", "categories", "drafts", "posts", "pages" ]
+          choice = opts["all"] ? "all" : args[0]
+          if choice.nil?
+            Jekyll.logger.error "You must specify items to list.\nSupported items are: #{supported_items.join(", ")}"
+            return
+          end
+          # normalize to lowercase
+          choice = choice.downcase
+          unless supported_items.include?(choice) || opts["all"]
+            Jekyll.logger.error "Invalid argument. Supported items are: #{supported_items.join(", ")}"
+            return
+          end
+
           opts["output"] = normalize_output_format(opts["output"])
           supported_formats = [ "plain", "yaml", "json", "csv", "tsv", "psv" ]
           unless supported_formats.include?(opts["output"])
@@ -51,24 +83,26 @@ module Jekyll
             return
           end
 
+          # Generate the website
           site = get_site(opts)
-          list = nil
-          case
-            when opts["tags"]
-              list = get_tags(site)
-            when opts["categories"]
-              list = get_categories(site)
-            when opts["drafts"]
-              list = get_posts(site, true)
-            when opts["posts"]
-              list = get_posts(site, false)
-            when opts["pages"]
-              list = get_pages(site)
+          # Populate the results based on the choice
+          to_print = Hash.new(0)
+          if choice != "all"
+            results = populate_results(choice, site)
+            if opts["count"]
+              to_print[choice] = count_items(results[choice])
             else
-              Jekyll.logger.error "Invalid option. You must specify a known option. Check --help."
-              return
+              to_print = results[choice]
+            end
+          else
+            supported_items.each do |item|
+              results = populate_results(item, site)
+              to_print[item] = count_items(results[item])
+            end
           end
-          print_data(list, opts)
+
+          # finally print the data
+          print_data(to_print, opts)
         end
 
         def print_data(data, opts)
@@ -78,6 +112,16 @@ module Jekyll
           print_list_text(data, ",") if opts["output"] == "csv"
           print_list_text(data, "\t") if opts["output"] == "tsv"
           print_list_text(data, "|") if opts["output"] == "psv"
+        end
+
+        def count_items(list)
+          count = 0
+          if list.class == Hash
+            count = list.keys.length
+          elsif list.class == Array
+            count = list.length
+          end
+          count
         end
 
         def get_categories(site)

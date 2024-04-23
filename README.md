@@ -1,6 +1,6 @@
 # Jekyll::Listme
 
-A [Jekyll](https://jekyllrb.com/) [command](https://jekyllrb.com/docs/plugins/commands/) plugin to list tags and categories for your Jekyll website and number of their occurrencies. Choose between a JSON, YAML, or plain text output.
+A [Jekyll](https://jekyllrb.com/) [command](https://jekyllrb.com/docs/plugins/commands/) plugin to list and count data in your Jekyll website. List tags, categories, and more, and count their occurrencies. Choose among various output formats.
 
 ## Installation
 
@@ -16,18 +16,25 @@ bundle update jekyll-listme
 
 ## Usage
 
-Plain output is the default, or you can use `--output plain`.
+Plain text is the default output format:
 
 ```sh
-bundle exec jekyll list --tags
-bundle exec jekyll list --categories
+bundle exec jekyll list tags
+bundle exec jekyll list categories
 ```
 
-You can also choose an output format, like this:
+You can choose an output format like this:
 
 ```sh
-bundle exec jekyll list --tags --output FORMAT
-bundle exec jekyll list --categories --output FORMAT
+bundle exec jekyll list tags --output FORMAT
+bundle exec jekyll list categories --output FORMAT
+```
+
+You can also count items, instead of listing them:
+
+```sh
+bundle exec jekyll list --count tags --output FORMAT
+bundle exec jekyll list --all --output FORMAT
 ```
 
 Supported formats are:

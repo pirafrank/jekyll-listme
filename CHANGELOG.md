@@ -2,6 +2,13 @@
 
 Notable changes to this project to be documented below.
 
+## [0.4.0]
+
+### Added
+
+- new `--count` option to count the number of specified item type
+- new `--all` option to count all items
+
 ## [0.3.0]
 
 ### Added
