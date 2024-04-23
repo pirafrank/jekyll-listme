@@ -13,6 +13,7 @@ module Jekyll
             # nb. check the short option because it may be used elsewhere.
             #     run --help to see the full list of options.
             c.option "output", "-o", "--output FORMAT", "Output format"
+            c.option "count", "-c", "--count", "Count the number of items"
 
             c.action do |args, options|
               options["serving"] = false
@@ -78,6 +79,7 @@ module Jekyll
               Jekyll.logger.error "Invalid option. You must specify a known option. Check --help."
               return
           end
+          list = count_items(choice, list) if opts["count"]
           print_data(list, opts)
         end
 
@@ -88,6 +90,18 @@ module Jekyll
           print_list_text(data, ",") if opts["output"] == "csv"
           print_list_text(data, "\t") if opts["output"] == "tsv"
           print_list_text(data, "|") if opts["output"] == "psv"
+        end
+
+        def count_items(choice, list)
+          count = 0
+          if list.class == Hash
+            count = list.keys.length
+          elsif list.class == Array
+            count = list.length
+          end
+          r = Hash.new(0)
+          r[choice] = count
+          r
         end
 
         def get_categories(site)
