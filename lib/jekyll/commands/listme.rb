@@ -32,29 +32,29 @@ module Jekyll
           o
         end
 
-        def get_site(opts)
+        def init_site(opts)
           Jekyll.logger.adjust_verbosity(opts)
           options = configuration_from_options(opts)
           options["show_drafts"] = true
           site = Jekyll::Site.new(options)
           site.reset
           site.read
-          site
+          @site = site
         end
 
-        def populate_results(choice, site)
+        def populate_results(choice)
           results = Hash.new(0)
           case choice
             when "tags"
-              results["tags"] = get_tags(site)
+              results["tags"] = get_tags()
             when "categories"
-              results["categories"] = get_categories(site)
+              results["categories"] = get_categories()
             when "drafts"
-              results["drafts"] = get_posts(site, true)
+              results["drafts"] = get_posts(true)
             when "posts"
-              results["posts"] = get_posts(site, false)
+              results["posts"] = get_posts(false)
             when "pages"
-              results["pages"] = get_pages(site)
+              results["pages"] = get_pages()
             else
               Jekyll.logger.error "Invalid option. You must specify a known option. Check --help."
               return
@@ -84,11 +84,11 @@ module Jekyll
           end
 
           # Generate the website
-          site = get_site(opts)
+          init_site(opts)
           # Populate the results based on the choice
           to_print = Hash.new(0)
           if choice != "all"
-            results = populate_results(choice, site)
+            results = populate_results(choice)
             if opts["count"]
               to_print[choice] = count_items(results[choice])
             else
@@ -96,7 +96,7 @@ module Jekyll
             end
           else
             supported_items.each do |item|
-              results = populate_results(item, site)
+              results = populate_results(item)
               to_print[item] = count_items(results[item])
             end
           end
@@ -124,14 +124,14 @@ module Jekyll
           count
         end
 
-        def get_categories(site)
-            categories = site.categories.keys
+        def get_categories()
+          @site.categories.keys
         end
 
-        def get_tags(site)
+        def get_tags()
           tags = Hash.new(0)
           # Loop through all the posts
-          site.posts.docs.each do |post|
+          @site.posts.docs.each do |post|
             # Loop through each tag of the post
             post.data['tags'].each do |tag|
               # If the tag already exists in the map, increment the count
@@ -145,12 +145,12 @@ module Jekyll
           end
 
           # Sort the tags alphabetically (case-insensitive)
-          sorted_tags = tags.sort_by { |tag, count| tag.downcase }.to_h
+          tags.sort_by { |tag, count| tag.downcase }.to_h
         end
 
-        def get_posts(site, is_draft)
+        def get_posts(is_draft)
           list = []
-          site.posts.docs.sort_by { |post| post.data["date"] }.each do |post|
+          @site.posts.docs.sort_by { |post| post.data["date"] }.each do |post|
             if post.data['draft'] == is_draft
               iso_date = post.data["date"].iso8601
               post_id = generate_base58_from_string(post.data['slug'])
@@ -161,9 +161,9 @@ module Jekyll
           list
         end
 
-        def get_pages(site)
+        def get_pages()
           pages = Hash.new(0)
-          site.pages.each do |page|
+          @site.pages.each do |page|
             pages[page.url] = page.data['title']
           end
           pages
