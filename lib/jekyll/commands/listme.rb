@@ -1,10 +1,11 @@
-require 'json'
+# frozen_string_literal: true
+
+require "json"
 
 module Jekyll
   module Commands
     class ListMe < Command
       class << self
-
         def init_with_program(prog)
           prog.command(:list) do |c|
             c.description "List tags and categories used in the site."
@@ -23,47 +24,46 @@ module Jekyll
           end
         end
 
-        def normalize_output_format(o)
-          if o.nil? then
-            o = "plain"
+        def normalize_output_format(output)
+          if output.nil?
+            "plain"
           else
-            o = o.downcase
+            output.downcase
           end
-          o
         end
 
-        def get_site(opts)
+        def init_site(opts)
           Jekyll.logger.adjust_verbosity(opts)
           options = configuration_from_options(opts)
           options["show_drafts"] = true
           site = Jekyll::Site.new(options)
           site.reset
           site.read
-          site
+          @site = site
         end
 
-        def populate_results(choice, site)
+        def populate_results(choice)
           results = Hash.new(0)
           case choice
-            when "tags"
-              results["tags"] = get_tags(site)
-            when "categories"
-              results["categories"] = get_categories(site)
-            when "drafts"
-              results["drafts"] = get_posts(site, true)
-            when "posts"
-              results["posts"] = get_posts(site, false)
-            when "pages"
-              results["pages"] = get_pages(site)
-            else
-              Jekyll.logger.error "Invalid option. You must specify a known option. Check --help."
-              return
+          when "tags"
+            results["tags"] = tags
+          when "categories"
+            results["categories"] = categories
+          when "drafts"
+            results["drafts"] = posts(true)
+          when "posts"
+            results["posts"] = posts(false)
+          when "pages"
+            results["pages"] = pages
+          else
+            Jekyll.logger.error "Invalid option. You must specify a known option. Check --help."
+            return
           end
           results
         end
 
         def process(args, opts)
-          supported_items = [ "tags", "categories", "drafts", "posts", "pages" ]
+          supported_items = %w(tags categories drafts posts pages)
           choice = opts["all"] ? "all" : args[0]
           if choice.nil?
             Jekyll.logger.error "You must specify items to list.\nSupported items are: #{supported_items.join(", ")}"
@@ -77,27 +77,27 @@ module Jekyll
           end
 
           opts["output"] = normalize_output_format(opts["output"])
-          supported_formats = [ "plain", "yaml", "json", "csv", "tsv", "psv" ]
+          supported_formats = %w(plain yaml json csv tsv psv)
           unless supported_formats.include?(opts["output"])
             Jekyll.logger.error "Invalid output format. Supported formats are: #{supported_formats.join(", ")}"
             return
           end
 
           # Generate the website
-          site = get_site(opts)
+          init_site(opts)
           # Populate the results based on the choice
           to_print = Hash.new(0)
-          if choice != "all"
-            results = populate_results(choice, site)
+          if choice == "all"
+            supported_items.each do |item|
+              results = populate_results(item)
+              to_print[item] = count_items(results[item])
+            end
+          else
+            results = populate_results(choice)
             if opts["count"]
               to_print[choice] = count_items(results[choice])
             else
               to_print = results[choice]
-            end
-          else
-            supported_items.each do |item|
-              results = populate_results(item, site)
-              to_print[item] = count_items(results[item])
             end
           end
 
@@ -116,24 +116,24 @@ module Jekyll
 
         def count_items(list)
           count = 0
-          if list.class == Hash
+          if list.instance_of?(Hash)
             count = list.keys.length
-          elsif list.class == Array
+          elsif list.instance_of?(Array)
             count = list.length
           end
           count
         end
 
-        def get_categories(site)
-            categories = site.categories.keys
+        def categories
+          @site.categories.keys
         end
 
-        def get_tags(site)
+        def tags
           tags = Hash.new(0)
           # Loop through all the posts
-          site.posts.docs.each do |post|
+          @site.posts.docs.each do |post|
             # Loop through each tag of the post
-            post.data['tags'].each do |tag|
+            post.data["tags"].each do |tag|
               # If the tag already exists in the map, increment the count
               if tags.key?(tag)
                 tags[tag] += 1
@@ -145,26 +145,26 @@ module Jekyll
           end
 
           # Sort the tags alphabetically (case-insensitive)
-          sorted_tags = tags.sort_by { |tag, count| tag.downcase }.to_h
+          tags.sort_by { |tag, _| tag.downcase }.to_h
         end
 
-        def get_posts(site, is_draft)
+        def posts(is_draft)
           list = []
-          site.posts.docs.sort_by { |post| post.data["date"] }.each do |post|
-            if post.data['draft'] == is_draft
-              iso_date = post.data["date"].iso8601
-              post_id = generate_base58_from_string(post.data['slug'])
-              title = post.data['title']
-              list << { "date" => iso_date, "id" => post_id, "title" => title }
-            end
+          @site.posts.docs.sort_by { |post| post.data["date"] }.each do |post|
+            next unless post.data["draft"] == is_draft
+
+            iso_date = post.data["date"].iso8601
+            post_id = generate_base58_from_string(post.data["slug"])
+            title = post.data["title"]
+            list << { "date" => iso_date, "id" => post_id, "title" => title }
           end
           list
         end
 
-        def get_pages(site)
+        def pages
           pages = Hash.new(0)
-          site.pages.each do |page|
-            pages[page.url] = page.data['title']
+          @site.pages.each do |page|
+            pages[page.url] = page.data["title"]
           end
           pages
         end
@@ -176,7 +176,7 @@ module Jekyll
           base58 = ""
           num_hex = Digest::SHA1.hexdigest(str)
           num = num_hex.to_i(16)
-          while num > 0
+          while num > 0 # rubocop:disable Style/NumericPredicate
             num, remainder = num.divmod(base)
             base58 = alphabet[remainder] + base58
           end
@@ -184,17 +184,17 @@ module Jekyll
         end
 
         def print_list_text(list, separator = " ")
-          if list.class == Hash
+          if list.instance_of?(Hash)
             list.each do |key, value|
               puts "#{key}#{separator}#{value}"
             end
-          elsif list.class == Array
+          elsif list.instance_of?(Array)
             list.each do |item|
-              if item.class == String
-                puts "#{item}"
-              elsif item.class == Hash
+              if item.instance_of?(String)
+                puts item
+              elsif item.instance_of?(Hash)
                 puts item.values.join(separator)
-              elsif item.class == Array
+              elsif item.instance_of?(Array)
                 puts item.join(separator)
               else
                 puts "Invalid data type"
@@ -214,7 +214,6 @@ module Jekyll
           # Print the output in YAML format
           puts list.to_yaml
         end
-
       end
     end
   end
