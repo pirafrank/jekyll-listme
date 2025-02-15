@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "listme/version"
+require_relative "commands/listme"
 
 module Jekyll
   module Listme
@@ -8,5 +9,3 @@ module Jekyll
     # Your code goes here...
   end
 end
-
-require_relative "commands/listme.rb"
