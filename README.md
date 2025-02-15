@@ -1,4 +1,4 @@
-# Jekyll::Listme
+# Jekyll ListMe
 
 A [Jekyll](https://jekyllrb.com/) [command](https://jekyllrb.com/docs/plugins/commands/) plugin to list and count data in your Jekyll website. List tags, categories, and more, and count their occurrencies. Choose among various output formats.
 
@@ -56,7 +56,11 @@ I got the first steps to create the template from [here](https://maxchadwick.xyz
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/pirafrank/jekyll-listme.
+[Bug reports](https://github.com/pirafrank/jekyll-listme/issues) and [pull requests](https://github.com/pirafrank/jekyll-listme/pulls) are welcome on GitHub.
+
+## Guarantee
+
+This plugin is provided as is, without any guarantee. Use at your own risk.
 
 ## License
 
