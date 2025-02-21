@@ -1,5 +1,9 @@
 # Jekyll ListMe
 
+[![Gem Version](https://img.shields.io/gem/v/jekyll-listme)](https://rubygems.org/gems/jekyll-listme)
+[![GitHub Release](https://img.shields.io/github/v/release/pirafrank/jekyll-listme)](https://github.com/pirafrank/jekyll-listme/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 A [Jekyll](https://jekyllrb.com/) [command](https://jekyllrb.com/docs/plugins/commands/) plugin to list and count data in your Jekyll website. List tags, categories, and more, and count their occurrencies. Choose among various output formats.
 
 ## Installation
