@@ -8,8 +8,24 @@ A [Jekyll](https://jekyllrb.com/) [command](https://jekyllrb.com/docs/plugins/co
 
 ## Installation
 
+1. Add the plugin to you Jekyll site's `Gemfile` in the `:jekyll_plugins` group:
+
 ```Gemfile
-gem 'jekyll-listme', git: 'https://github.com/pirafrank/jekyll-listme', branch: 'main'
+group :jekyll_plugins do
+  gem 'jekyll-listme'
+end
+```
+
+2. Run `bundle install`
+
+### From git
+
+Alternatively, you can get code straight from this repository. Code from `main` branch should be stable enough but may contain unreleased software with bugs or breaking changes. Unreleased software should be considered of beta quality.
+
+```Gemfile
+group :jekyll_plugins do
+  gem 'jekyll-listme', git: 'https://github.com/pirafrank/jekyll-listme', branch: 'main'
+end
 ```
 
 ## Update
